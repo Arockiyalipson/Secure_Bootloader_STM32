@@ -1,1 +1,13 @@
-// The includes blinking of LED
+/*
+What to do ??
+Blink the led in the nucleo board
+   
+*/
+
+#include<stdint.h>
+
+int main()
+{
+    printf("hello");
+    return 0;
+}
