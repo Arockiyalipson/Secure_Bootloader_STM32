@@ -12,7 +12,7 @@ User button on PC13
 
 #define PHERI_BASE 0x40000000UL // Base address of all pheripheral
 
-#define AHB2_OFFSET 0x0800000UL              // AHB2 offset
+#define AHB2_OFFSET 0x08000000UL              // AHB2 offset
 #define AHB2_BASE (PHERI_BASE + AHB2_OFFSET) // AHB2 base address
 
 #define GPIOA_OFFSET 0X00000000UL             // GPIOA offset value
