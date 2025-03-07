@@ -82,40 +82,73 @@ typedef struct
 #define GPIOA ((GPIO_STR *)GPIOA_BASE)     // setting GPIOA base address to the struct
 #define USART2 ((USART2_STR *)USART2_BASE) // setting USART2 base address to the struct
 
-#define GPIOAEN (1U << 17) // shift 1 to 17th position to enable clk for GPIO A
-#define USART2EN (1U << 17)
-#define PA2 (1U << 2)
-#define PA5 (1U << 5) // PUT VALUE IN ODR REGISTER
+#define GPIOAEN (1U << 17)  // shift 1 to 17th position to enable clk for GPIO A
+#define USART2EN (1U << 17) // clk enble for uart
+#define PA2 (1U << 2)       // PIN 2 ENABLE IN GPIOA ODR
+#define CR1_TE (1U << 3)    // set bit 3 to 1 for TE eneble
+#define CR1_UE (1U << 0)
+#define ISR_TXE (1U << 7)
+
+#define SYSCLK 16000000
+#define APB1_CLK SYSCLK
+#define BaudRate 115200
+static void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE);
 
 int main()
 {
-    // Set value in the respected register
-    //  Enable clk for gpioa
-    RCC->RCC_ABHENR |= GPIOAEN;
-
-    // set moder register
-    GPIOA->GPIO_MODER |= (1U << 10);
-    GPIOA->GPIO_MODER &= ~(1U << 11);
-    while (1)
-    {
-        GPIOA->GPIO_ODR ^= (PA5);
-        for (int i = 0; i < 1000000; i++)
-        {
-            __asm__("nop");
-        }
-    }
 }
 
 // Init function for USART2 tx
 void uart2_tx_init(void)
 {
-    RCC->RCC_ABHENR |= GPIOAEN;   // enable clk for gpio
-    RCC->RCC_APB1ENR |= USART2EN; // enable clk for usart
 
-    // set moder register
-    GPIOA->GPIO_MODER |= (1U << 10);
-    GPIOA->GPIO_MODER &= ~(1U << 11);
+    /* Init function for uart modeule*/
+    // Config GPIO
+    /*
+        1. clk enable for gpio
+        2. GPIO to alternate function mode(Moderreg)
+        3. GPIO to alternate function(AFL or AFH)
+    */
+
+    RCC->RCC_ABHENR |= GPIOAEN;      // enable clk for gpio
+    GPIOA->GPIO_MODER &= ~(1U << 4); // IN MODER REGISTER
+    GPIOA->GPIO_MODER |= (1U << 5);
+
+    GPIOA->GPIO_AFRL |= (1U << 8); // SETTING ALTERNATE FUNCTION REGISTER VALUE (AF07)
+    GPIOA->GPIO_AFRL |= (1U << 9);
+    GPIOA->GPIO_AFRL |= (1U << 10);
+    GPIOA->GPIO_AFRL &= ~(1U << 11);
+
+    // config UART
+    /*
+         1. clk enable for UART
+         2. config baudrate (16bit value)
+         3. config tranfer direction
+         3. enable UART module
+    */
+
+    RCC->RCC_APB1ENR |= USART2EN;       // enable clk for usart
+    USART2_BRR_SET(APB1_CLK, BaudRate); // calculate baud rate
+    USART2->USART_CR1 = CR1_TE;         // config tranfer direction
+    USART2->USART_CR1 |= CR1_UE;        // enable UART module
 }
-void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE)
+
+void uart_tx(char ch)
 {
+    // write values into the tx data register
+    while (!(USART2->USART_ISR) & ISR_TXE)
+    {
+    }
+
+    USART2->USART_TDR = ch & 0xff; // to write the exact data
+}
+
+static void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE)
+{
+    USART2->USART_BRR = Compute_BaudRate(PHERICLK, BAUDRATE);
+}
+
+static uint16_t Compute_BaudRate(uint32_t PHERICLK, uint32_t BAUDRATE)
+{
+    return ((PHERICLK + (BAUDRATE / 2U)) / BAUDRATE); // return calculated baud rate
 }
