@@ -1,49 +1,31 @@
-/* Linker file for the MCU */ 
+ENTRY(Reset_handler)
 
-ENTRY(Reset_Handler) /*Entry to reset handler*/
-
-MEMORY /*Put the memory */
+MEMORY
 {
-    FLASH(rx):ORIGIN = 0x08000000 ,LENGHT = 512K
-    SRAM(rwx):ORIGIN = 0X20000000 ,LENGHT = 64K
+    FLASH(rx) : ORIGIN = 0X08000000, LENGTH =512K
+    SRAM(rwx) : ORIGIN = 0X20000000, LENGTH =80K
 }
-
 SECTIONS
 {
-    .isr_vector:
+    .text :
     {
-        .=ALIGN(4);
-        KEEP(*(.isr_vector))
-        . = ALIGN(4);
-    } > FLASH
-    
-    .text:
-    {
-        .=ALIGN(4);
+        *(.isr_vector)
         *(.text)
-        *(.text*)
-
-        .=ALIGN(4);
-        _etext = .; /*end of text section stores in the symbol*/
-    } >FLASH
-     
-    .rodata:
-    {
-        . = ALIGN(4);
         *(.rodata)
-        *(.rodata*)
-        . = ALIGN(4);
-        _erodata = .;
-    } >RAM
+        _etext = .;
+    } >FLASH AT >FLASH 
 
-    .data:
+    .data :
     {
-        .=ALIGN(4);
-
-        _sdata = .; /* start of data storing address*/
-        *(.data);
-        *(.data*);
-
-
-    }
+        _sdata = . ;
+        *(.data)
+        _edata = . ;
+    } >SRAM AT >FLASH
+    
+    .bss :
+    {   
+        _sbss = .;
+        *(.bss)
+        _ebss = .;
+    }> SRAM AT> SRAM
 }
