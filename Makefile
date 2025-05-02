@@ -3,12 +3,12 @@ CCdump = arm-none-eabi-objdump.exe
 CCS = arm-none-eabi-nm.exe
 DF = -h
 MACH = cortex-m4
-CFlag = -g -c -mcpu=$(MACH) -mthumb -std=gnu11 -Wall -o0 
-CSTD = -nostdlib
+CFlag =-g -c -mcpu=$(MACH) -mthumb -std=gnu11 -Wall -o0 
+CSTD = -nostdlib 
 LFlag = -T
 
 TARGET = final.elf
-LFile = linker.ld
+LFile = linker_cube.ld
 
 All: main.o start.o
 
@@ -20,7 +20,7 @@ $(TARGET): main.o start.o
 main.o:App_2.c 
 	$(CC) $(CFlag) $^ -o $@
 
-start.o:start.c
+start.o:start.s
 	$(CC) $(CFlag) $^ -o $@
 
 dump:$(TARGET)

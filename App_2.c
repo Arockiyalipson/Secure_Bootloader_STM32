@@ -87,9 +87,6 @@ typedef struct
 #define PA2 (1U << 2)
 #define PA5 (1U << 5) // PUT VALUE IN ODR REGISTER
 
-uint32_t hello = 400;
-uint32_t bye;
-
 void _init(void) {}
 int main()
 {
