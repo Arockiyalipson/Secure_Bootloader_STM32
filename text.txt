@@ -1,0 +1,19 @@
+Linker writing 
+    1. Entry point of programm Reset_Handler
+    2. Memory region definition
+    3. Sections definition
+        1. .isr_Vector 
+        2. .text with _etext = .
+        3. .data section with _sdata =., _edata =., _sidata = LOADADDR(.) to load data section start to end for copying
+        4. .bss section _sbss , _ebss for making it zero 
+
+Start file
+    1. Stack start 
+    1. Put all the IRQ handler into an array and give them a section name
+    2. function prototype of all the IRQ handler 
+    3. point it into a Defaut fuction and make it weak 
+    4. start with Reset_Handler 
+    5. Load the .data section from flash to ram 
+    6. Make the .bss section in ram "0"
+    7. call the main()
+

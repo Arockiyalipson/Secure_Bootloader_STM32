@@ -8,7 +8,7 @@ CSTD = -nostdlib
 LFlag = -T
 
 TARGET = final.elf
-LFile = linker_cube.ld
+LFile = linker.ld
 
 All: main.o start.o
 
@@ -16,11 +16,12 @@ FINAL: $(TARGET)
 
 $(TARGET): main.o start.o
 	$(CC) $^ $(CSTD) $(LFlag) $(LFile) -Wl,-Map=final.map -o $(TARGET)
+	@echo "taget compiled"
 
 main.o:App_2.c 
 	$(CC) $(CFlag) $^ -o $@
 
-start.o:start.s
+start.o:start.c
 	$(CC) $(CFlag) $^ -o $@
 
 dump:$(TARGET)
