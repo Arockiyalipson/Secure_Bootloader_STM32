@@ -82,28 +82,20 @@ typedef struct
 #define GPIOA ((GPIO_STR *)GPIOA_BASE)     // setting GPIOA base address to the struct
 #define USART2 ((USART2_STR *)USART2_BASE) // setting USART2 base address to the struct
 
-#define GPIOAEN (1U << 17) // shift 1 to 17th position to enable clk for GPIO A
-#define USART2EN (1U << 17)
-#define PA2 (1U << 2)
-#define PA5 (1U << 5) // PUT VALUE IN ODR REGISTER
+#define GPIOAEN (1U << 17)  // shift 1 to 17th position to enable clk for GPIO A
+#define USART2EN (1U << 17) // clk enble for uart
+#define PA2 (1U << 2)       // PIN 2 ENABLE IN GPIOA ODR
+#define CR1_TE (1U << 3)    // set bit 3 to 1 for TE eneble
+#define CR1_UE (1U << 0)
+#define ISR_TXE (1U << 7)
+
+#define SYSCLK 16000000
+#define APB1_CLK SYSCLK
+#define BaudRate 115200
+static void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE);
 
 int main()
 {
-    // Set value in the respected register
-    //  Enable clk for gpioa
-    RCC->RCC_ABHENR |= GPIOAEN;
-
-    // set moder register
-    GPIOA->GPIO_MODER |= (1U << 10);
-    GPIOA->GPIO_MODER &= ~(1U << 11);
-    while (1)
-    {
-        GPIOA->GPIO_ODR ^= (PA5);
-        for (int i = 0; i < 1000000; i++)
-        {
-            __asm__("nop");
-        }
-    }
 }
 
 // Init function for USART2 tx
@@ -116,8 +108,12 @@ void uart2_tx_init(void)
     GPIOA->GPIO_MODER |= (1U << 10);
     GPIOA->GPIO_MODER &= ~(1U << 11);
 }
-
-// setting Baudrate 
 void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE)
 {
+    USART2->USART_BRR = Compute_BaudRate(PHERICLK, BAUDRATE);
+}
+
+static uint16_t Compute_BaudRate(uint32_t PHERICLK, uint32_t BAUDRATE)
+{
+    return ((PHERICLK + (BAUDRATE / 2U)) / BAUDRATE); // return calculated baud rate
 }
