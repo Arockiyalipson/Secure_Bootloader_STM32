@@ -116,6 +116,8 @@ void uart2_tx_init(void)
     GPIOA->GPIO_MODER |= (1U << 10);
     GPIOA->GPIO_MODER &= ~(1U << 11);
 }
+
+// setting Baudrate 
 void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE)
 {
 }
