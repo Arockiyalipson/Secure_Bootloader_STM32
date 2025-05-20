@@ -1,11 +1,7 @@
 #include<stdint-gcc.h>
 
-// stack size 
-#define SRAM_start 0x20000000U
-#define SRAM_size (80*1024)
-#define SRAM_end (SRAM_start + SRAM_size)
 
-#define STACK_start SRAM_end
+
 
 //getting symbols
 extern uint32_t _etext;
@@ -14,6 +10,9 @@ extern uint32_t _sdata;
 extern uint32_t _edata;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
+extern uint32_t _estack;
+extern uint32_t _stack_top;
+
 
 void Reset_Handler(void);
 int main(void);
@@ -104,9 +103,8 @@ void FPU_HANDLERIRQ(void) __attribute__((weak, alias("Default_Handler")));
 void SPI4_HANDLERIRQ(void) __attribute__((weak, alias("Default_Handler")));
 
 // creation of IRQ ahndlers
-const uintptr_t vector[] __attribute__((section(".isr_vector"))) = {
-    (uintptr_t)STACK_start,
-    0,
+const uintptr_t vector[] __attribute__((used,section(".isr_vector"))) = {
+    (uintptr_t)&_stack_top,
     (uintptr_t)Reset_Handler,
     (uintptr_t)NMI_HANDLERIRQ,
     (uintptr_t)HardFault_HANDLERIRQ,
@@ -207,10 +205,11 @@ void Default_Handler(void)
 {
     while (1){};
 }
+
 void Reset_Handler(void)
 {
-    uint8_t *Psrc = (uint8_t*) &_sidata;
-    uint8_t *Pdst = (uint8_t*) &_sdata;
+    uint32_t *Psrc =  &_sidata;
+    uint32_t *Pdst =  &_sdata;
     uint32_t size = (uint32_t)&_edata - (uint32_t)&_sdata; 
     for(int i=0; i<size;i++)
     {
@@ -218,7 +217,7 @@ void Reset_Handler(void)
     }
 
     size = (uint32_t)&_ebss - (uint32_t)&_sbss;
-    Pdst = (uint8_t*) &_sbss;
+    Pdst = (uint32_t*) &_sbss;
         for(int i=0;i<size;i++)
         {
             *Pdst++ = 0;

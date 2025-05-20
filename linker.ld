@@ -1,18 +1,27 @@
-ENTRY(Reset_Handler)
-
+OUTPUT_ARCH(arm)
 MEMORY
 {
-    FLASH(rw):ORIGIN =0x08000000, LENGTH = 512K
-    RAM(rwx):ORIGIN =0x20000000, LENGTH = 80K
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+    RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
 }
+
+PROVIDE(_stack_top = ORIGIN(RAM) + LENGTH(RAM));
+ENTRY(Reset_Handler)
 
 SECTIONS
 {
+    .vectors :
+    {
+        . = ALIGN(4);
+        KEEP(*(.isr_vector))
+        . = ALIGN(4);
+    }> FLASH
+
     .text :
     {
-        KEEP(*(.isr_vector))
-        *(.text)
-        *(.rodata)
+        . = ALIGN(4);
+        *(.text .text.*)
+        *(.rodata .rodata.*)
         . = ALIGN(4);
         _etext = .;
     }> FLASH AT > FLASH
@@ -21,20 +30,19 @@ SECTIONS
 
     .data :
     {
+	. = ALIGN(4);
         _sdata = .; 
-        . = ALIGN(4);
-        *(.data)
+        *(.data .data.*)
         . = ALIGN(4);
         _edata = .;
-    }> FLASH AT > RAM
+    }> RAM AT > FLASH
 
     .bss :
     {
         _sbss = .;
         . = ALIGN(4);
         *(.bss)
-        *(COMMON)
         . = ALIGN(4);
         _ebss = .;
-    }> RAM 
+    }> RAM AT > RAM
 }
