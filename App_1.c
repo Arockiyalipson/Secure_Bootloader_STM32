@@ -89,24 +89,35 @@ typedef struct
 #define CR1_UE (1U << 0)
 #define ISR_TXE (1U << 7)
 
-#define SYSCLK 16000000
+#define SYSCLK 16000000 // 16MHz system clk
 #define APB1_CLK SYSCLK
 #define BaudRate 115200
 static void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE);
 
 int main()
 {
+    uart2_tx_init();
 }
 
 // Init function for USART2 tx
 void uart2_tx_init(void)
 {
-    RCC->RCC_ABHENR |= GPIOAEN;   // enable clk for gpio
-    RCC->RCC_APB1ENR |= USART2EN; // enable clk for usart
+    RCC->RCC_ABHENR |= GPIOAEN; // enable clk for gpio
 
     // set moder register
-    GPIOA->GPIO_MODER |= (1U << 10);
-    GPIOA->GPIO_MODER &= ~(1U << 11);
+    GPIOA->GPIO_MODER |= (1U << 29);
+    GPIOA->GPIO_MODER &= ~(1U << 28);
+    // set ALTERNATE FUNCTION TYPE TO AF7 FOR PIN 14
+    GPIOA->GPIO_AFRL |= (1U << 24);
+    GPIOA->GPIO_AFRL |= (1U << 25);
+    GPIOA->GPIO_AFRL |= (1U << 26);
+    GPIOA->GPIO_AFRL &= ~(1U << 27);
+
+    // Uart 2 config
+    RCC->RCC_APB1ENR |= USART2EN; // enable clk for usart
+
+    //config baudrate
+    
 }
 void USART2_BRR_SET(uint32_t PHERICLK, uint32_t BAUDRATE)
 {
